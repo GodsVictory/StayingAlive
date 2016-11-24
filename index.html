@@ -15,11 +15,11 @@
     var cheerers = new Array();
     var clientOptions = {
         options: {
-          debug: false,
-          secure: true
+          debug: false
         },
         connection: {
-          reconnect: true
+          reconnect: true,
+          secure: true
         },
       },
       client = new tmi.client(clientOptions);
