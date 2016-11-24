@@ -80,6 +80,7 @@ setInterval(function() {
     var blackout;
     
     function setChannel(channel) {
+      clearTimeout(blackout);
       if (channel) {
         this.channel = channel;
         document.getElementById("channel").value = channel;
@@ -93,7 +94,6 @@ setInterval(function() {
     }
 
     function channelUpdate() {
-      clearTimeout(blackout);
       var channelInput = document.getElementById("channel");
       channelInput.style.textShadow = "0 0 0 white";
       if (channel.length > 0)
