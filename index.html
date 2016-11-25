@@ -7,9 +7,10 @@
   <meta name="viewport" content="width=device-width" />
   <link href='https://fonts.googleapis.com/css?family=Fredoka+One' rel='stylesheet' type='text/css'>
   <script src="tmi.js"></script>
+  <script src="jquery-3.1.1.slim.min.js"></script>
   <script src="velocity.js"></script>
   <script src="qurl.js"></script>
-  <script src="jquery-3.1.1.slim.min.js"></script>
+  
   <script>
     var channel = "";
     var cheerers = new Array();
@@ -27,33 +28,56 @@
     loop();
     function loop () {
       setTimeout(function() {
-        for (key in cheerers)
-          if (cheerers[key].bits >= 0) {
-            var digits = cheerers[key].total.toString().length;
-            var subtractFrom = "1";
-            while (subtractFrom.length < digits) subtractFrom = "0" + subtractFrom;
-            subtractFrom = parseFloat("."+subtractFrom);
-            
-            var bits = cheerers[key].total;
-            for (i=0;i<digits;i++)
-              bits = "0" + bits;
-            bits = parseFloat("."+bits);
-            
-            cheerers[key].bits -= (subtractFrom-bits)*100;
-            $("#"+key).width(cheerers[key].bits/cheerers[key].total*100+"%")
-            $("#health"+key).text(Math.floor(cheerers[key].bits));
-          } else {
-            delete cheerers[key];
-            $("#"+key).parent().remove();
+        for (key in cheerers) {
+          var date = Date.now();
+          var n = Math.floor((date-cheerers[key].startTime)/(1000+cheerers[key].total));
+          if (n > 0) {
+            cheerers[key].bits -= n;
+            cheerers[key].startTime = date;
+            if (cheerers[key].bits >= 0) {
+              //$("#"+key).width(cheerers[key].bits/cheerers[key].total*100+"%")
+              $("#"+key).velocity({
+                width: cheerers[key].bits/cheerers[key].total*100+"%"
+              },{
+                duration:500
+              });
+              $("#health"+key).text(Math.floor(cheerers[key].bits));
+            } else {
+              delete cheerers[key];
+              $("#"+key).parent().remove();
+            }
           }
+        }
         loop();
       }, 10);
     }
     
+    /*    loop();             SCALING LOOP
+    function loop () {
+      setTimeout(function() {
+        for (key in cheerers) {
+          var date = Date.now();
+          var n = Math.floor((date-cheerers[key].startTime)/(cheerers[key].total));
+          if (n > 0) {
+            cheerers[key].bits -= parseFloat(".0"+n);
+            cheerers[key].startTime = date;
+            if (cheerers[key].bits >= 0) {
+              $("#"+key).width(cheerers[key].bits/cheerers[key].total*100+"%")
+              $("#health"+key).text(Math.floor(cheerers[key].bits));
+            } else {
+              delete cheerers[key];
+              $("#"+key).parent().remove();
+            }
+          }
+        }
+        loop();
+      }, 10);
+    }*/
+    
     client.on('cheer', cheer);
     function cheer(channel, userstate, message) {
       if (cheerers[userstate["display-name"]] === undefined) {
-        cheerers[userstate["display-name"]] = { bits:parseInt(userstate.bits), total:parseInt(userstate.bits) };
+        cheerers[userstate["display-name"]] = { bits:parseInt(userstate.bits), total:parseInt(userstate.bits), startTime:Date.now() };
         $("#health").append('<div style="width:100%;height:34px;background-color:SlateGrey;position:relative;margin-bottom:10px;"><div id="'+userstate["display-name"]+'" style="width:100%;left:0px;background-color:lime;position:absolute;font:20px Fredoka One;padding:5px 0 5px 0px;color:Black;">&nbsp;'+userstate["display-name"]+'</div><div id="health'+userstate["display-name"]+'" style="position:absolute;width:100%;text-align:center;font:20px Fredoka One;padding:5px 0 5px 0;color:Black;z-index:2;top:0px;">'+userstate.bits+'</div></div>');
       } else {
         cheerers[userstate["display-name"]].bits += userstate.bits;
@@ -86,28 +110,34 @@
       if (channel == "test") {
         setInterval(function() {
           var teststate = {};
-          teststate.bits = 59;
+          teststate.bits = 9;
+          teststate["display-name"] = "uiop";
+          cheer("qwer",teststate,"qwer")
+        }, 1100); 
+        setInterval(function() {
+          var teststate = {};
+          teststate.bits = 10;
           teststate["display-name"] = "qwer";
           cheer("qwer",teststate,"qwer")
         }, 1100);    
-        setInterval(function() {
+        setTimeout(function() {
           var teststate = {};
           teststate.bits = 100;
           teststate["display-name"] = "zxcv";
           cheer("qwer",teststate,"qwer")
         }, 1100);
-      setTimeout(function() {
-        var teststate = {};
-        teststate.bits = 1000;
-        teststate["display-name"] = "asdf";
-        cheer("asdf",teststate,"asdf")
-      }, 1000);
-      setTimeout(function() {
-        var teststate = {};
-        teststate.bits = 10000;
-        teststate["display-name"] = "bvn";
-        cheer("asdf",teststate,"asdf")
-      }, 1000);
+        setTimeout(function() {
+          var teststate = {};
+          teststate.bits = 1000;
+          teststate["display-name"] = "asdf";
+          cheer("asdf",teststate,"asdf")
+        }, 1000);
+        setTimeout(function() {
+          var teststate = {};
+          teststate.bits = 10000;
+          teststate["display-name"] = "bvn";
+          cheer("asdf",teststate,"asdf")
+        }, 1000);
       }
     }
 
