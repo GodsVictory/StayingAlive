@@ -30,12 +30,17 @@
       setTimeout(function() {
         for (key in cheerers) {
           var date = Date.now();
-          var n = Math.floor((date-cheerers[key].startTime)/(1000+cheerers[key].total));
+          var secondsLeft = (cheerers[key].endTime - date)/1000;
+          var hour = pad(""+Math.floor(secondsLeft / 3600),2);
+          var min = pad(""+Math.floor(secondsLeft % 3600 / 60),2);
+          var sec = pad(""+Math.floor(secondsLeft % 3600 % 60),2);
+          $("#time"+key).html(hour + ":" + min + ":" + sec + "&nbsp;");
+          
+          var n = Math.floor((date-cheerers[key].startTime)/(1000+cheerers[key].total/10));
           if (n > 0) {
             cheerers[key].bits -= n;
             cheerers[key].startTime = date;
             if (cheerers[key].bits >= 0) {
-              //$("#"+key).width(cheerers[key].bits/cheerers[key].total*100+"%")
               $("#"+key).velocity({
                 width: cheerers[key].bits/cheerers[key].total*100+"%"
               },{
@@ -52,6 +57,10 @@
       }, 10);
     }
     
+    function pad(str, max) {
+      return str.length < max ? pad("0" + str, max) : str;
+    }
+
     /*    loop();             SCALING LOOP
     function loop () {
       setTimeout(function() {
@@ -77,11 +86,12 @@
     client.on('cheer', cheer);
     function cheer(channel, userstate, message) {
       if (cheerers[userstate["display-name"]] === undefined) {
-        cheerers[userstate["display-name"]] = { bits:parseInt(userstate.bits), total:parseInt(userstate.bits), startTime:Date.now() };
-        $("#health").append('<div style="width:100%;height:34px;background-color:SlateGrey;position:relative;margin-bottom:10px;"><div id="'+userstate["display-name"]+'" style="width:100%;left:0px;background-color:lime;position:absolute;font:20px Fredoka One;padding:5px 0 5px 0px;color:Black;">&nbsp;'+userstate["display-name"]+'</div><div id="health'+userstate["display-name"]+'" style="position:absolute;width:100%;text-align:center;font:20px Fredoka One;padding:5px 0 5px 0;color:Black;z-index:2;top:0px;">'+userstate.bits+'</div></div>');
+        cheerers[userstate["display-name"]] = { bits:parseInt(userstate.bits), total:parseInt(userstate.bits), startTime:Date.now(), endTime:Date.now()+Math.floor((1000+parseInt(userstate.bits)/10)*parseInt(userstate.bits)) };
+        $("#health").append('<div style="width:100%;height:34px;background-color:SlateGrey;position:relative;margin-bottom:10px;"><div id="'+userstate["display-name"]+'" style="width:100%;left:0px;background-color:lime;position:absolute;font:20px Fredoka One;padding:5px 0 5px 0px;color:Black;">&nbsp;'+userstate["display-name"]+'</div><div id="health'+userstate["display-name"]+'" style="position:absolute;width:100%;text-align:center;font:20px Fredoka One;padding:5px 0 5px 0;color:Black;z-index:2;top:0px;">'+userstate.bits+'</div><div id="time'+userstate["display-name"]+'" style="position:absolute;width:100%;text-align:right;font:20px Fredoka One;padding:5px 0 5px 0;color:Black;z-index:2;top:0px;"></div></div>');
       } else {
         cheerers[userstate["display-name"]].bits += userstate.bits;
         cheerers[userstate["display-name"]].total += userstate.bits;
+        cheerers[userstate["display-name"]].endTime = Date.now()+Math.floor(1000+cheerers[userstate["display-name"]].total/10)*cheerers[userstate["display-name"]].bits;
       }
     };
 
