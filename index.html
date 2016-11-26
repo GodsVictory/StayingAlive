@@ -10,7 +10,7 @@
   <script src="jquery-3.1.1.slim.min.js"></script>
   <script src="velocity.js"></script>
   <script src="qurl.js"></script>
-  
+
   <script>
     var channel = "";
     var cheerers = new Array();
@@ -24,39 +24,44 @@
         },
       },
       client = new tmi.client(clientOptions);
-    
+
     loop();
-    function loop () {
-      setTimeout(function() {
+
+    function loop() {
+      setTimeout(function () {
         for (key in cheerers) {
           var date = Date.now();
-          var secondsLeft = (cheerers[key].endTime - date)/1000;
-          var hour = pad(""+Math.floor(secondsLeft / 3600),2);
-          var min = pad(""+Math.floor(secondsLeft % 3600 / 60),2);
-          var sec = pad(""+Math.floor(secondsLeft % 3600 % 60),2);
-          $("#time"+key).html(hour + ":" + min + ":" + sec + "&nbsp;");
-          
-          var n = Math.floor((date-cheerers[key].startTime)/(1000+cheerers[key].total/10));
+          var secondsLeft = (cheerers[key].endTime - date) / 1000;
+          if (secondsLeft < 0)
+            $("#time" + key).html("00:00:00&nbsp;");
+          else {
+            var hour = pad("" + Math.floor(secondsLeft / 3600), 2);
+            var min = pad("" + Math.floor(secondsLeft % 3600 / 60), 2);
+            var sec = pad("" + Math.floor(secondsLeft % 3600 % 60), 2);
+            $("#time" + key).html(hour + ":" + min + ":" + sec + "&nbsp;");
+          }
+
+          var n = Math.floor((date - cheerers[key].startTime) / (1000 + cheerers[key].total / 10));
           if (n > 0) {
             cheerers[key].bits -= n;
             cheerers[key].startTime = date;
             if (cheerers[key].bits >= 0) {
-              $("#"+key).velocity({
-                width: cheerers[key].bits/cheerers[key].total*100+"%"
-              },{
-                duration:500
+              $("#" + key).velocity({
+                width: cheerers[key].bits / cheerers[key].total * 100 + "%"
+              }, {
+                duration: 500
               });
-              $("#health"+key).text(Math.floor(cheerers[key].bits));
+              $("#health" + key).text(Math.floor(cheerers[key].bits));
             } else {
               delete cheerers[key];
-              $("#"+key).parent().remove();
+              $("#" + key).parent().remove();
             }
           }
         }
         loop();
       }, 10);
     }
-    
+
     function pad(str, max) {
       return str.length < max ? pad("0" + str, max) : str;
     }
@@ -82,16 +87,29 @@
         loop();
       }, 10);
     }*/
-    
+
     client.on('cheer', cheer);
+
     function cheer(channel, userstate, message) {
-      if (cheerers[userstate["display-name"]] === undefined) {
-        cheerers[userstate["display-name"]] = { bits:parseInt(userstate.bits), total:parseInt(userstate.bits), startTime:Date.now(), endTime:Date.now()+Math.floor((1000+parseInt(userstate.bits)/10)*parseInt(userstate.bits)) };
-        $("#health").append('<div style="width:100%;height:34px;background-color:SlateGrey;position:relative;margin-bottom:10px;"><div id="'+userstate["display-name"]+'" style="width:100%;left:0px;background-color:lime;position:absolute;font:20px Fredoka One;padding:5px 0 5px 0px;color:Black;">&nbsp;'+userstate["display-name"]+'</div><div id="health'+userstate["display-name"]+'" style="position:absolute;width:100%;text-align:center;font:20px Fredoka One;padding:5px 0 5px 0;color:Black;z-index:2;top:0px;">'+userstate.bits+'</div><div id="time'+userstate["display-name"]+'" style="position:absolute;width:100%;text-align:right;font:20px Fredoka One;padding:5px 0 5px 0;color:Black;z-index:2;top:0px;"></div></div>');
+      var name = userstate["display-name"];
+      var id = '';
+      for (var i = 0, len = name.length; i < len; i++)
+        id += name.charCodeAt(i).toString();
+      var bits = parseInt(userstate.bits);
+      var date = Date.now();
+      var endTime = date + Math.floor((1000 + bits / 10) * bits);
+      if (cheerers[id] === undefined) {
+        cheerers[id] = {
+          bits: bits,
+          total: bits,
+          startTime: date,
+          endTime: endTime
+        };
+        $("#health").append('<div class="greyHealth"><div id="' + id + '" class="greenHealth"></div><div class="name">&nbsp;' + name + '</div><div id="health' + id + '" class="bits">' + bits + '</div><div id="time' + id + '" class="time"></div></div>');
       } else {
-        cheerers[userstate["display-name"]].bits += userstate.bits;
-        cheerers[userstate["display-name"]].total += userstate.bits;
-        cheerers[userstate["display-name"]].endTime = Date.now()+Math.floor(1000+cheerers[userstate["display-name"]].total/10)*cheerers[userstate["display-name"]].bits;
+        cheerers[id].bits += bits;
+        cheerers[id].total += bits;
+        cheerers[id].endTime = date + Math.floor(1000 + cheerers[id].total / 10) * cheerers[id].bits;
       }
     };
 
@@ -103,7 +121,7 @@
 
     client.connect();
     var blackout;
-    
+
     function setChannel(channel) {
       clearTimeout(blackout);
       if (channel) {
@@ -116,38 +134,44 @@
       blackout = setTimeout(function () {
         document.getElementById("channel").style.textShadow = "0 0 0 transparent";
       }, 3000);
-      
+
       if (channel == "test") {
-        setInterval(function() {
+        setInterval(function () {
           var teststate = {};
           teststate.bits = 9;
-          teststate["display-name"] = "uiop";
-          cheer("qwer",teststate,"qwer")
-        }, 1100); 
-        setInterval(function() {
+          teststate["display-name"] = "9 per second";
+          cheer("", teststate, "")
+        }, 1100);
+        setInterval(function () {
           var teststate = {};
           teststate.bits = 10;
-          teststate["display-name"] = "qwer";
-          cheer("qwer",teststate,"qwer")
-        }, 1100);    
-        setTimeout(function() {
+          teststate["display-name"] = "10 per second";
+          cheer("", teststate, "")
+        }, 1100);
+        setTimeout(function () {
+          var teststate = {};
+          teststate.bits = 10;
+          teststate["display-name"] = "10 once";
+          cheer("", teststate, "")
+        }, 1000);
+        setTimeout(function () {
           var teststate = {};
           teststate.bits = 100;
-          teststate["display-name"] = "zxcv";
-          cheer("qwer",teststate,"qwer")
-        }, 1100);
-        setTimeout(function() {
+          teststate["display-name"] = "100 once";
+          cheer("", teststate, "")
+        }, 900);
+        setTimeout(function () {
           var teststate = {};
           teststate.bits = 1000;
-          teststate["display-name"] = "asdf";
-          cheer("asdf",teststate,"asdf")
-        }, 1000);
-        setTimeout(function() {
+          teststate["display-name"] = "1000 once";
+          cheer("", teststate, "")
+        }, 800);
+        setTimeout(function () {
           var teststate = {};
           teststate.bits = 10000;
-          teststate["display-name"] = "bvn";
-          cheer("asdf",teststate,"asdf")
-        }, 1000);
+          teststate["display-name"] = "10000 once";
+          cheer("", teststate, "")
+        }, 700);
       }
     }
 
@@ -168,6 +192,56 @@
       }, 1000);
     });
   </script>
+  <style>
+    .greyHealth {
+      width: 100%;
+      height: 34px;
+      background-color: SlateGrey;
+      position: relative;
+      margin-bottom: 10px;
+    }
+    
+    .greenHealth {
+      width: 100%;
+      height: 100%;
+      left: 0px;
+      background-color: lime;
+      position: absolute;
+    }
+    
+    .name {
+      position: absolute;
+      width: 100%;
+      text-align: left;
+      font: 20px Fredoka One;
+      padding: 5px 0 5px 0;
+      color: Black;
+      z-index: 2;
+      top: 0px;
+    }
+    
+    .bits {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      font: 20px Fredoka One;
+      padding: 5px 0 5px 0;
+      color: Black;
+      z-index: 2;
+      top: 0px;
+    }
+    
+    .time {
+      position: absolute;
+      width: 100%;
+      text-align: right;
+      font: 20px Fredoka One;
+      padding: 5px 0 5px 0;
+      color: Black;
+      z-index: 2;
+      top: 0px;
+    }
+  </style>
 </head>
 
 <body style="margin:0;padding:0;background-color:black;width:100%;height:100%;overflow:hidden;position:relative;-webkit-backface-visibility:hidden;backface-visibility:hidden;">
