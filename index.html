@@ -135,38 +135,8 @@
         document.getElementById("channel").style.textShadow = "0 0 0 transparent";
       }, 3000);
 
-      if (channel.toLowerCase() == "test") {
-        setInterval(function () {
-          var teststate = {};
-          teststate.bits = 10;
-          teststate["display-name"] = "10 per second";
-          cheer("", teststate, "")
-        }, 1100);
-        setTimeout(function () {
-          var teststate = {};
-          teststate.bits = 10;
-          teststate["display-name"] = "10 once";
-          cheer("", teststate, "")
-        }, 1000);
-        setTimeout(function () {
-          var teststate = {};
-          teststate.bits = 100;
-          teststate["display-name"] = "100 once";
-          cheer("", teststate, "")
-        }, 900);
-        setTimeout(function () {
-          var teststate = {};
-          teststate.bits = 1000;
-          teststate["display-name"] = "1000 once";
-          cheer("", teststate, "")
-        }, 800);
-        setTimeout(function () {
-          var teststate = {};
-          teststate.bits = 10000;
-          teststate["display-name"] = "10000 once";
-          cheer("", teststate, "")
-        }, 700);
-      }
+      if (channel.toLowerCase() == "test")
+        test();
     }
 
     function channelUpdate() {
@@ -185,6 +155,42 @@
         document.body.style.cursor = "none";
       }, 1000);
     });
+
+    var test0
+    function test() {
+      if (test0)
+        clearInterval(test0);
+      test0 = setInterval(function () {
+        var teststate = {};
+        teststate.bits = 10;
+        teststate["display-name"] = "10 per second";
+        cheer("", teststate, "")
+      }, 1100);
+      var test1 = setTimeout(function () {
+        var teststate = {};
+        teststate.bits = 10;
+        teststate["display-name"] = "10 once";
+        cheer("", teststate, "")
+      }, 1000);
+      var test2 = setTimeout(function () {
+        var teststate = {};
+        teststate.bits = 100;
+        teststate["display-name"] = "100 once";
+        cheer("", teststate, "")
+      }, 900);
+      var test3 = setTimeout(function () {
+        var teststate = {};
+        teststate.bits = 1000;
+        teststate["display-name"] = "1000 once";
+        cheer("", teststate, "")
+      }, 800);
+      var test4 = setTimeout(function () {
+        var teststate = {};
+        teststate.bits = 10000;
+        teststate["display-name"] = "10000 once";
+        cheer("", teststate, "")
+      }, 700);
+    }
   </script>
   <style>
     .greyHealth {
