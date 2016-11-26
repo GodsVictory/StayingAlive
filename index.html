@@ -135,13 +135,7 @@
         document.getElementById("channel").style.textShadow = "0 0 0 transparent";
       }, 3000);
 
-      if (channel == "test") {
-        setInterval(function () {
-          var teststate = {};
-          teststate.bits = 9;
-          teststate["display-name"] = "9 per second";
-          cheer("", teststate, "")
-        }, 1100);
+      if (channel.toLowerCase() == "test") {
         setInterval(function () {
           var teststate = {};
           teststate.bits = 10;
