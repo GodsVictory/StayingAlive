@@ -101,7 +101,6 @@
           endTime: endTime
         };
         $("#health").append('<div class="greyHealth"><div id="' + id + '" class="greenHealth"></div><div class="name">&nbsp;' + name + '</div><div id="health' + id + '" class="bits">' + bits + '</div><div id="time' + id + '" class="time"></div></div>');
-        console.log(endTime - date);
         $("#" + id).velocity({
           width: "0%"
         }, {
@@ -124,36 +123,32 @@
     client.on('connected', function () {
       document.getElementById('channel').placeholder = "Channel..."
       document.getElementById('channel').readOnly = false;
-      setChannel(Qurl.create().query('c'));
+      var parChannel = Qurl.create().query('c');
+      $("#channel").text(parChannel);
+      setChannel(parChannel);
     });
 
     client.connect();
     var blackout;
+    var testRunning = false;
 
     function setChannel(channel) {
-      if (channel === undefined) return;
-      clearTimeout(blackout);
       if (channel) {
-        this.channel = channel;
-        document.getElementById("channel").value = channel;
-        Qurl.create().query('c', channel);
-        client.join(channel).catch(function (err) {});
+        clearTimeout(blackout);
+          this.channel = channel;
+          document.getElementById("channel").value = channel;
+          Qurl.create().query('c', channel);
+          client.join(channel).catch(function (err) {});
+        blackout = setTimeout(function () {
+          $("#channel").css("color","transparent");
+        }, 3000);
+
+        if (channel.toLowerCase() == "test" && !testRunning) {
+          testRunning = true;
+          test();
+        }
       } else
-        Qurl.create().query('c', false);
-      blackout = setTimeout(function () {
-        document.getElementById("channel").style.textShadow = "0 0 0 transparent";
-      }, 3000);
-
-      if (channel.toLowerCase() == "test")
-        test();
-    }
-
-    function channelUpdate() {
-      var channelInput = document.getElementById("channel");
-      channelInput.style.textShadow = "0 0 0 white";
-      if (channel.length > 0)
-        client.part(channel);
-      setChannel(channelInput.value);
+          Qurl.create().query('c', false);
     }
 
     var cursorTimeout;
@@ -201,6 +196,21 @@
         cheer("", teststate, "")
       }, 700);
     }
+    
+    $(document).keydown(function() {
+      $("#channel").css("color","white");
+      if (event.keyCode == 8) {
+        if (channel.length > 0)
+          client.part(channel);
+        $("#channel").text($("#channel").text().slice(0, -1));
+        setChannel($("#channel").text());
+      } else if (event.keyCode >=48 && event.keyCode <= 90 || event.keyCode == 189) {
+        if (channel.length > 0)
+          client.part(channel);
+        $("#channel").text($("#channel").text() + event.key);
+        setChannel($("#channel").text());
+      }
+    });
   </script>
   <style>
     .greyHealth {
@@ -255,7 +265,8 @@
 </head>
 
 <body style="margin:0;padding:0;background-color:black;width:100%;height:100%;overflow:hidden;position:relative;-webkit-backface-visibility:hidden;backface-visibility:hidden;">
-  <input type="text" id="channel" readonly="readonly" onblur="this.focus()" onkeyup="channelUpdate()" autofocus style='padding-left:5px;background-color:transparent;outline:none;color:transparent;text-shadow:0 0 0 white;border:none;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;' name="channel" placeholder='Connecting...'>
+  <!--<input type="text" id="channel" readonly="readonly" onblur="this.focus()" onkeyup="channelUpdate()" autofocus style='padding-left:5px;background-color:transparent;outline:none;color:transparent;text-shadow:0 0 0 white;border:none;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;' name="channel" placeholder='Connecting...'> -->
+  <div id="channel" style='padding-left:5px;background-color:transparent;color:white;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;'></div>
   <div id="health" style="height:100%;width:90%;padding:35px 5% 0 5%;"></div>
 </body>
 
