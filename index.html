@@ -31,7 +31,7 @@
       setTimeout(function () {
         for (key in cheerers) {
           var date = Date.now();
-          var secondsLeft = (cheerers[key].endTime - date) / 1000;
+          var secondsLeft = Math.ceil((cheerers[key].endTime - date) / 1000);
           if (secondsLeft < 0)
             $("#time" + key).html("00:00:00&nbsp;");
           else {
