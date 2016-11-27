@@ -46,11 +46,6 @@
             cheerers[key].bits -= n;
             cheerers[key].startTime = date;
             if (cheerers[key].bits >= 0) {
-              $("#" + key).velocity({
-                width: cheerers[key].bits / cheerers[key].total * 100 + "%"
-              }, {
-                duration: 500
-              });
               $("#health" + key).text(Math.floor(cheerers[key].bits));
             } else {
               delete cheerers[key];
@@ -106,10 +101,23 @@
           endTime: endTime
         };
         $("#health").append('<div class="greyHealth"><div id="' + id + '" class="greenHealth"></div><div class="name">&nbsp;' + name + '</div><div id="health' + id + '" class="bits">' + bits + '</div><div id="time' + id + '" class="time"></div></div>');
+        console.log(endTime - date);
+        $("#" + id).velocity({
+          width: "0%"
+        }, {
+          duration: endTime - date,
+          easing: "linear"
+        });
       } else {
         cheerers[id].bits += bits;
         cheerers[id].total += bits;
         cheerers[id].endTime = date + Math.floor(1000 + cheerers[id].total / 10) * cheerers[id].bits;
+        $("#" + id).velocity("stop", true).velocity({
+          width: "0%"
+        }, {
+          duration: cheerers[id].endTime - date,
+          easing: "linear"
+        });
       }
     };
 
@@ -123,6 +131,7 @@
     var blackout;
 
     function setChannel(channel) {
+      if (channel === undefined) return;
       clearTimeout(blackout);
       if (channel) {
         this.channel = channel;
@@ -157,6 +166,7 @@
     });
 
     var test0
+
     function test() {
       if (test0)
         clearInterval(test0);
