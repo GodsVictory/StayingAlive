@@ -124,7 +124,6 @@
       document.getElementById('channel').placeholder = "Channel..."
       document.getElementById('channel').readOnly = false;
       var parChannel = Qurl.create().query('c');
-      $("#channel").text(parChannel);
       setChannel(parChannel);
     });
 
@@ -133,22 +132,29 @@
     var testRunning = false;
 
     function setChannel(channel) {
+      if (channel === undefined) return;
+      clearTimeout(blackout);
       if (channel) {
-        clearTimeout(blackout);
-          this.channel = channel;
-          document.getElementById("channel").value = channel;
-          Qurl.create().query('c', channel);
-          client.join(channel).catch(function (err) {});
-        blackout = setTimeout(function () {
-          $("#channel").css("color","transparent");
-        }, 3000);
-
-        if (channel.toLowerCase() == "test" && !testRunning) {
-          testRunning = true;
-          test();
-        }
+        this.channel = channel;
+        document.getElementById("channel").value = channel;
+        Qurl.create().query('c', channel);
+        client.join(channel).catch(function (err) {});
       } else
-          Qurl.create().query('c', false);
+        Qurl.create().query('c', false);
+      blackout = setTimeout(function () {
+        document.getElementById("channel").style.textShadow = "0 0 0 transparent";
+      }, 3000);
+
+      if (channel.toLowerCase() == "test")
+        test();
+    }
+    
+    function channelUpdate() {
+      var channelInput = document.getElementById("channel");
+      channelInput.style.textShadow = "0 0 0 white";
+      if (channel.length > 0)
+        client.part(channel);
+      setChannel(channelInput.value);
     }
 
     var cursorTimeout;
@@ -197,6 +203,7 @@
       }, 700);
     }
     
+
     $(document).keydown(function() {
       $("#channel").css("color","white");
       if (event.keyCode == 8) {
@@ -265,9 +272,7 @@
 </head>
 
 <body style="margin:0;padding:0;background-color:black;width:100%;height:100%;overflow:hidden;position:relative;-webkit-backface-visibility:hidden;backface-visibility:hidden;">
-  <!--<input type="text" id="asdf" readonly="readonly" onblur="this.focus()" onkeyup="channelUpdate()" autofocus style='padding-left:5px;background-color:transparent;outline:none;color:transparent;text-shadow:0 0 0 transparent;border:none;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;' name="channel" placeholder='Connecting...'>-->
-  <input type="text" id="asdf" onblur="this.focus()" autofocus style='padding-left:5px;background-color:transparent;outline:none;color:transparent;text-shadow:0 0 0 transparent;border:none;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;'>
-  <div id="channel" style='padding-left:5px;background-color:transparent;color:white;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;'></div>
+  <input type="text" id="channel" readonly="readonly" onblur="this.focus()" onkeyup="channelUpdate()" autofocus style='padding-left:5px;background-color:transparent;outline:none;color:transparent;text-shadow:0 0 0 white;border:none;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;' name="channel" placeholder='Connecting...'>
   <div id="health" style="height:100%;width:90%;padding:35px 5% 0 5%;"></div>
 </body>
 
