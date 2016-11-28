@@ -124,23 +124,28 @@
       $("#channel").prop("placeholder", "Channel...");
       $("#channel").prop("readonly", false);
       var parChannel = Qurl.create().query('c');
-      setChannel(parChannel);
-      console.log(parChannel);
+      if (parChannel)
+        setChannel(parChannel);
     });
 
     client.connect();
     
     var blackout;
     function setChannel(chan) {
+      clearTimeout(blackout);
+      $("#channel").css("text-shadow", "0 0 0 white");
+      if (channel.length > 0)
+        client.part(channel);
       if (chan) {
-        clearTimeout(blackout);
-        $("#channel").css("text-shadow", "0 0 0 white");
-        if (channel.length > 0)
-          client.part(channel);
         channel = chan;
         $("#channel").val(channel);
-        client.join(channel).catch(function (err) {});
+      } else {
+        channel = $("#channel").val();
         Qurl.create().query('c', channel);
+      }
+      
+      if (channel) {
+        client.join(channel).catch(function (err) {});
         blackout = setTimeout(function () {
           $("#channel").css("text-shadow", "0 0 0 transparent");
         }, 3000);
