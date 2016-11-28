@@ -101,6 +101,7 @@
           endTime: endTime
         };
         $("#health").append('<div class="greyHealth"><div id="' + id + '" class="greenHealth"></div><div class="name">&nbsp;' + name + '</div><div id="health' + id + '" class="bits">' + bits + '</div><div id="time' + id + '" class="time"></div></div>');
+        console.log(endTime - date);
         $("#" + id).velocity({
           width: "0%"
         }, {
@@ -129,7 +130,6 @@
 
     client.connect();
     var blackout;
-    var testRunning = false;
 
     function setChannel(channel) {
       if (channel === undefined) return;
@@ -145,8 +145,10 @@
         document.getElementById("channel").style.textShadow = "0 0 0 transparent";
       }, 3000);
 
-      if (channel.toLowerCase() == "test")
+      if (channel.toLowerCase() == "test" && !testRunning) {
         test();
+        testRunning = true;
+      }
     }
     
     function channelUpdate() {
@@ -167,6 +169,7 @@
     });
 
     var test0
+    var testRunning = false;
 
     function test() {
       if (test0)
@@ -202,22 +205,7 @@
         cheer("", teststate, "")
       }, 700);
     }
-    
 
-    $(document).keydown(function() {
-      $("#channel").css("color","white");
-      if (event.keyCode == 8) {
-        if (channel.length > 0)
-          client.part(channel);
-        $("#channel").text($("#channel").text().slice(0, -1));
-        setChannel($("#channel").text());
-      } else if (event.keyCode >=48 && event.keyCode <= 90 || event.keyCode == 189) {
-        if (channel.length > 0)
-          client.part(channel);
-        $("#channel").text($("#channel").text() + event.key);
-        setChannel($("#channel").text());
-      }
-    });
   </script>
   <style>
     .greyHealth {
