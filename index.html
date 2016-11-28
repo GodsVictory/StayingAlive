@@ -101,7 +101,6 @@
           endTime: endTime
         };
         $("#health").append('<div class="greyHealth"><div id="' + id + '" class="greenHealth"></div><div class="name">&nbsp;' + name + '</div><div id="health' + id + '" class="bits">' + bits + '</div><div id="time' + id + '" class="time"></div></div>');
-        console.log(endTime - date);
         $("#" + id).velocity({
           width: "0%"
         }, {
@@ -122,29 +121,30 @@
     };
 
     client.on('connected', function () {
-      document.getElementById('channel').placeholder = "Channel..."
-      document.getElementById('channel').readOnly = false;
+      $("#channel").prop("placeholder", "Channel...");
+      $("#channel").prop("readonly", false);
       var parChannel = Qurl.create().query('c');
       setChannel(parChannel);
     });
 
     client.connect();
+    
     var blackout;
-
-    function setChannel(channel) {
-      if (channel === undefined) return;
+    function setChannel(chan) {
       clearTimeout(blackout);
-      if (channel) {
-        this.channel = channel;
-        document.getElementById("channel").value = channel;
-        Qurl.create().query('c', channel);
+      if (chan) {
+        channel = chan;
+        $("#channel").value = channel;
         client.join(channel).catch(function (err) {});
-      } else
+        Qurl.create().query('c', channel);
+        blackout = setTimeout(function () {
+          $("#channel").css("text-shadow", "0 0 0 transparent");
+        }, 3000);
+      } else {
+        $("#channel").css("text-shadow", "0 0 0 transparent");
         Qurl.create().query('c', false);
-      blackout = setTimeout(function () {
-        document.getElementById("channel").style.textShadow = "0 0 0 transparent";
-      }, 3000);
-
+      }
+      
       if (channel.toLowerCase() == "test" && !testRunning) {
         test();
         testRunning = true;
@@ -160,17 +160,17 @@
     }
 
     var cursorTimeout;
-    document.addEventListener("mousemove", function () {
-      document.body.style.cursor = "auto";
+    $(document).mousemove(function () {
+      console.log("asdf");
+      $("body").css("cursor", "auto");
       clearTimeout(cursorTimeout);
       cursorTimeout = setTimeout(function () {
-        document.body.style.cursor = "none";
+        $("body").css("cursor", "none");
       }, 1000);
     });
 
     var test0
     var testRunning = false;
-
     function test() {
       if (test0)
         clearInterval(test0);
@@ -260,7 +260,7 @@
 </head>
 
 <body style="margin:0;padding:0;background-color:black;width:100%;height:100%;overflow:hidden;position:relative;-webkit-backface-visibility:hidden;backface-visibility:hidden;">
-  <input type="text" id="channel" readonly="readonly" onblur="this.focus()" onkeyup="channelUpdate()" autofocus style='padding-left:5px;background-color:transparent;outline:none;color:transparent;text-shadow:0 0 0 white;border:none;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;' name="channel" placeholder='Connecting...'>
+  <input type="text" id="channel" readonly="readonly" onblur="this.focus()" onkeyup="channelUpdate()" autofocus style='padding-left:5px;background-color:transparent;outline:none;color:transparent;text-shadow:0 0 0 transparent;border:none;position:absolute;width:100%;font-size:24px;font-family:"Fredoka One";top:0px;' name="channel" placeholder='Connecting...'>
   <div id="health" style="height:100%;width:90%;padding:35px 5% 0 5%;"></div>
 </body>
 
