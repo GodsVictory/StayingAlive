@@ -41,12 +41,12 @@
             $("#time" + key).html(hour + ":" + min + ":" + sec + "&nbsp;");
           }
 
-          var n = Math.floor((date - cheerers[key].startTime) / (1000 + cheerers[key].total / 10));
+          var n = Math.floor((date - cheerers[key].checkpoint) / (1000 + cheerers[key].total / 10));
           if (n > 0) {
             cheerers[key].bits -= n;
-            cheerers[key].startTime = date;
+            cheerers[key].checkpoint = date;
             if (cheerers[key].bits >= 0) {
-              $("#health" + key).text(Math.floor(cheerers[key].bits));
+              $("#health" + key).text(cheerers[key].bits);
             } else {
               delete cheerers[key];
               $("#" + key).parent().remove();
@@ -92,12 +92,12 @@
         id += name.charCodeAt(i).toString();
       var bits = parseInt(userstate.bits);
       var date = Date.now();
-      var endTime = date + Math.floor((1000 + bits / 10) * bits);
       if (cheerers[id] === undefined) {
+        var endTime = date + Math.round(1000 + bits / 10) * bits;
         cheerers[id] = {
           bits: bits,
           total: bits,
-          startTime: date,
+          checkpoint: date,
           endTime: endTime
         };
         $("#health").append('<div class="greyHealth"><div id="' + id + '" class="greenHealth"></div><div class="name">&nbsp;' + name + '</div><div id="health' + id + '" class="bits">' + bits + '</div><div id="time' + id + '" class="time"></div></div>');
@@ -111,7 +111,7 @@
         cheerers[id].bits += bits;
         cheerers[id].total += bits;
         cheerers[id].endTime = date + Math.floor(1000 + cheerers[id].total / 10) * cheerers[id].bits;
-        $("#" + id).velocity("stop", true).velocity({
+        $("#" + id).velocity("stop", true).css("width", cheerers[id].bits / cheerers[id].total * 100 + "%").velocity({
           width: "0%"
         }, {
           duration: cheerers[id].endTime - date,
@@ -129,8 +129,20 @@
     });
 
     client.connect();
-    
+
+    $(window).resize(function () {
+      for (key in cheerers) {
+        $("#" + key).velocity("stop", true).css("width", cheerers[key].bits / cheerers[key].total * 100 + "%").velocity({
+          width: "0%"
+        }, {
+          duration: cheerers[key].endTime - Date.now(),
+          easing: "linear"
+        });
+      }
+    });
+
     var blackout;
+
     function setChannel(chan) {
       clearTimeout(blackout);
       $("#channel").css("text-shadow", "0 0 0 white");
@@ -143,7 +155,7 @@
         channel = $("#channel").val();
         Qurl.create().query('c', channel);
       }
-      
+
       if (channel) {
         client.join(channel).catch(function (err) {});
         blackout = setTimeout(function () {
@@ -153,7 +165,7 @@
         $("#channel").css("text-shadow", "0 0 0 transparent");
         Qurl.create().query('c', false);
       }
-      
+
       if (channel.toLowerCase() == "test" && !testRunning) {
         test();
         testRunning = true;
@@ -171,6 +183,7 @@
 
     var test0
     var testRunning = false;
+
     function test() {
       if (test0)
         clearInterval(test0);
@@ -205,7 +218,6 @@
         cheer("", teststate, "")
       }, 700);
     }
-
   </script>
   <style>
     .greyHealth {
